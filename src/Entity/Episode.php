@@ -26,6 +26,9 @@ class Episode
     #[ORM\Column]
     private ?\DateTime $created = null;
 
+    #[ORM\Column]
+    private ?int $api_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -82,6 +85,18 @@ class Episode
     public function setCreated(\DateTime $created): static
     {
         $this->created = $created;
+
+        return $this;
+    }
+
+    public function getApiId(): ?int
+    {
+        return $this->api_id;
+    }
+
+    public function setApiId(int $api_id): static
+    {
+        $this->api_id = $api_id;
 
         return $this;
     }
