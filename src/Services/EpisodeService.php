@@ -15,9 +15,21 @@ class EpisodeService
 {
 
     private CacheInterface $cache;
+
     public function __construct(private HttpClientInterface $client, private EntityManagerInterface $entityManager, CacheInterface $cache)
     {
         $this->cache = $cache;
+    }
+
+    public function list(): array
+    {
+        return $this->cache->get('episodes_all', function (){
+            $q = 'SELECT t.api_id as ID, t.name, t.air_date as Date, t.episode, r.rate as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode';
+            $query = $this->entityManager->createQuery($q);
+            $result = $query->execute();
+            $collection = new ArrayCollection($result);
+            return $collection->toArray();
+        });
     }
 
     public function import(): array
@@ -59,6 +71,9 @@ class EpisodeService
             }
             $page += 1;
         }
+        if($updated > 0){
+            $this->cache->delete('episodes_all');
+        }
         return ['all'=>count($id_list), 'updated'=>$updated];
 
     }
@@ -90,7 +105,6 @@ class EpisodeService
 
         $this->cache->delete('average_rank_episode_'.$episode->getId());
         $this->cache->delete('last_reviews_episode_'.$episode->getId());
-
     }
 
     public function rate($id, $text): float
@@ -115,6 +129,9 @@ class EpisodeService
     {
         return $this->cache->get('average_rank_episode_'.$id, function () use ($id){
             $averageRate = $this->entityManager->getRepository(AverageRate::class)->findOneBy(['episode'=> $id]);
+            if(is_null($averageRate)){
+                return 0;
+            }
             return $averageRate->getRate();
         });
     }
@@ -127,9 +144,16 @@ class EpisodeService
         });
     }
 
+    private function getEpisode($id)
+    {
+        return $this->cache->get('episode_'.$id, function () use ($id){
+            return $this->entityManager->getRepository(Episode::class)->findOneBy(['api_id'=> $id]);
+        });
+    }
+
     public function getSummary($id): array
     {
-        $episode = $this->entityManager->getRepository(Episode::class)->findOneBy(['api_id'=> $id]);
+        $episode = $this->getEpisode($id);
 
         return [
             'name'=>$episode->getName(),

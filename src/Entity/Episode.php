@@ -26,7 +26,7 @@ class Episode
     #[ORM\Column]
     private ?\DateTime $created = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'api_id', type: 'integer', unique: true)]
     private ?int $api_id = null;
 
     public function getId(): ?int

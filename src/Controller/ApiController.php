@@ -18,32 +18,40 @@ class ApiController
         return new JsonResponse($result, 200);
     }
 
-    #[Route('/api/episode/rate', name: 'rate', methods: ['POST'])]
+    #[Route('/api/episode/review', name: 'rate', methods: ['POST'])]
     public function rate(Request $request, EpisodeService $episodeService, EpisodeRateValidation $validation): Response
     {
         $data = json_decode($request->getContent(), true);
-        $validation->validate($data);
+        $validation->validateRate($data);
 
         $episodeService->rate($data['id'], $data['text']);
         return new JsonResponse(['method'=>'rate'], 200);
     }
 
-    #[Route('/api/episode/rate/{id}', name: 'rateByID', methods: ['POST'])]
+    #[Route('/api/episode/review/{id}', name: 'rateByID', methods: ['POST'])]
     public function rateByID(string $id, Request $request, EpisodeService $episodeService, EpisodeRateValidation $validation): Response
     {
         $data = json_decode($request->getContent(), true);
         $data['id'] = intval($id);
 
-        $validation->validate($data);
+        $validation->validateRate($data);
         $rate = $episodeService->rate($data['id'], $data['text']);
         return new JsonResponse(['rate'=>$rate], 200);
     }
 
     #[Route('/api/episode/summary/{id}', name: 'summary', methods: ['POST'])]
-    public function summary(string $id, EpisodeService $episodeService): Response
+    public function summary(string $id, EpisodeService $episodeService, EpisodeRateValidation $validation): Response
     {
         $value = intval($id);
+        $validation->validateSummary($id);
         $data = $episodeService->getSummary($value);
+        return new JsonResponse($data, 200);
+    }
+
+    #[Route('/api/episodes/list', name: 'list', methods: ['POST'])]
+    public function list(EpisodeService $episodeService): Response
+    {
+        $data = $episodeService->list();
         return new JsonResponse($data, 200);
     }
 
