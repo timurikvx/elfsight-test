@@ -24,7 +24,7 @@ class EpisodeService
     public function list(): array
     {
         return $this->cache->get('episodes_all', function (){
-            $q = 'SELECT t.api_id as ID, t.name, t.air_date as Date, t.episode, r.rate as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode';
+            $q = 'SELECT t.api_id as ID, t.name, t.air_date as Date, t.episode, NULLIF(r.rate, 0) as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode';
             $query = $this->entityManager->createQuery($q);
             $result = $query->execute();
             $collection = new ArrayCollection($result);
