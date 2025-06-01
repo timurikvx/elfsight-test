@@ -136,12 +136,13 @@ Output body:
 ### A short description of the project
 
 In addition to Symfony, the project also uses standard Redis-based caching.
-I thought about whether to use RabbitMQ, but decided that the project did not require it
+I thought about whether to use RabbitMQ, but decided that the project did not require it.
 The description did not say that the project was meant to be highly loaded, so I focused on the architecture.
 My principles included maximum code reuse and it`s minimization
 
 I also decided to use validation to check the incoming data.
 
-
-
+The tests are not ready yet. I didn't have time.
+I'll do it tomorrow, the problem is that I've never used tests yet.
+So I need to learn how to work with them
 
