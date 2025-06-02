@@ -1,6 +1,5 @@
 # Elfsight Php Home Task
 
-
 Symfony version: 7.3.0
 
 The library `davmixcool/php-sentiment-analyzer` is used as sentiment analysis
@@ -54,7 +53,7 @@ POST /api/episodes/import
 ```json
 {
     "id": 23,
-    "text": "It`s great episode"
+    "text": "It`s great episode!!!"
 }
 
 ```
@@ -64,7 +63,7 @@ POST /api/episodes/import
 **Input body:**
 ```json
 {
-    "text": "It`s great episode"
+    "text": "It`s very great episode"
 }
 
 ```
@@ -73,7 +72,7 @@ POST /api/episodes/import
 
 ```json
 {
-    "rate": 0
+    "rating": 0
 }
 ```
 
@@ -88,7 +87,7 @@ Output body:
 {
     "name": "Pilot",
     "date": "2013-12-02",
-    "rate": 0.44,
+    "rating": 0.44,
     "last_reviews": [
         "It`s great episode",
         "It`s review",
@@ -110,38 +109,48 @@ Output body:
     {
         "ID": 1,
         "name": "Pilot",
-        "Date": {
-            "date": "2013-12-02 00:00:00.000000",
-            "timezone_type": 3,
-            "timezone": "Europe/Berlin"
-        },
+        "date": "2013-12-02",
         "episode": "S01E01",
-        "avg_rate": 0.44
+        "avg_rating": 0
     },
     {
         "ID": 2,
         "name": "Lawnmower Dog",
-        "Date": {
-            "date": "2013-12-09 00:00:00.000000",
-            "timezone_type": 3,
-            "timezone": "Europe/Berlin"
-        },
+        "date": "2013-12-09",
         "episode": "S01E02",
-        "avg_rate": null
+        "avg_rating": 0
     }
 ]
 
 ```
+## Description Of Objects
 
-### A short description of the project
+#### App\Entity
+
+- __AverageRating__ - average rating of episode
+- __Episode__ - Rick and Morty episodes
+- __EpisodeRating__ - all review and rating of episodes
+
+#### App\Services
+
+- __EpisodeService__ - main logic working with Rating, Reviews and Episodes
+
+#### App\Validation
+
+- __EpisodeRatingValidation__ - class validations of enter data
+
+__/docker__ - Docker build files directory
+
+## Tests
+
+After running the tests, the result will say Deprecated: 2 - this is a sentiment analysis library
+
+## A Short Description Of The Project
 
 In addition to Symfony, the project also uses standard Redis-based caching.
-I thought about whether to use RabbitMQ, but decided that the project did not require it.
 The description did not say that the project was meant to be highly loaded, so I focused on the architecture.
 My principles included maximum code reuse and it`s minimization
 
 I also decided to use validation to check the incoming data.
 
-The tests are not ready yet. I'll do it tomorrow, the problem is that I've never used tests yet.
-So I need to learn how to work with them
-
+Good luck
