@@ -24,12 +24,26 @@ class EpisodeService
     public function list(): array
     {
         return $this->cache->get('episodes_all', function (){
-            $q = 'SELECT t.api_id as ID, t.name, t.air_date as Date, t.episode, NULLIF(r.rate, 0) as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode ORDER BY ID';
-            $query = $this->entityManager->createQuery($q);
-            $result = $query->execute();
-            $collection = new ArrayCollection($result);
-            return $collection->toArray();
+            return $this->listFromBase();
         });
+    }
+
+    private function listFromBase(): array
+    {
+        $q = 'SELECT t.api_id as ID, t.name, t.air_date as date, t.episode, COALESCE(r.rate, 0) as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode ORDER BY ID';
+        $query = $this->entityManager->createQuery($q);
+        $result = $query->execute();
+        $collection = new ArrayCollection($result);
+        $collection = $collection->map(function ($item){
+            return [
+                'ID'=>$item['ID'],
+                'name'=>$item['name'],
+                'date'=>$item['date']->format('Y-m-d'),
+                'episode'=>$item['episode'],
+                'avg_rating'=>floatval($item['avg_rate'])
+            ];
+        });
+        return $collection->toArray();
     }
 
     public function import(): array
@@ -80,15 +94,14 @@ class EpisodeService
 
     private function getAllId(): array
     {
-        $dq = $this->entityManager->createQueryBuilder()->select('t.api_id')->from(Episode::class, 't');
-        $query = $dq->getQuery();
-        $result = $query->execute();
-        $collection = new ArrayCollection($result);
-        return $collection->map(fn ($item) => $item['api_id'])->toArray();
+        $all = $this->listFromBase();
+        $collection = new ArrayCollection($all);
+        return $collection->map(fn ($item) => $item['ID'])->toArray();
     }
 
     private function calculateAverage(Episode $episode): void
     {
+        //Calculate also possible into query with AVG()
         $rates = $this->entityManager->getRepository(EpisodeRate::class)->findBy(['episode'=> $episode->getId()]);
         $list = new ArrayCollection($rates);
         $sum = $list->reduce(fn($value, $item) => $value + $item->getSentinelScore(), 0);
@@ -109,7 +122,7 @@ class EpisodeService
 
     public function rate($id, $text): float
     {
-        $episode = $this->entityManager->getRepository(Episode::class)->findOneBy(['api_id'=> $id]);
+        $episode = $this->getEpisode($id);
 
         $analyzer = new Analyzer();
         $result = $analyzer->getSentiment($text);

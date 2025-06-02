@@ -142,7 +142,6 @@ My principles included maximum code reuse and it`s minimization
 
 I also decided to use validation to check the incoming data.
 
-The tests are not ready yet. I didn't have time.
-I'll do it tomorrow, the problem is that I've never used tests yet.
+The tests are not ready yet. I'll do it tomorrow, the problem is that I've never used tests yet.
 So I need to learn how to work with them
 

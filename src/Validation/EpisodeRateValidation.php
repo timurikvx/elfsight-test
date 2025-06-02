@@ -3,7 +3,6 @@
 namespace App\Validation;
 
 use App\Entity\Episode;
-use App\Validation\Constraints\EpisodeExist;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Validator\Constraints;
@@ -48,7 +47,7 @@ class EpisodeRateValidation
         $this->sendErrors($errors, false);
     }
 
-    public function validateSummary($id)
+    public function validateSummary($id): void
     {
         $validator = Validation::createValidator();
         $episode = $this->entityManager->getRepository(Episode::class)->findOneBy(['api_id'=>$id]);
@@ -80,7 +79,7 @@ class EpisodeRateValidation
 
         }
 
-        $response = new JsonResponse(['validation_errors'=>$errors_list], 400);
+        $response = new JsonResponse(['validation_errors'=>$errors_list], 500);
         $response->send();
         exit();
     }

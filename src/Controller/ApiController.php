@@ -1,5 +1,5 @@
 <?php
-// src/Controller/LuckyController.php
+
 namespace App\Controller;
 
 use App\Services\EpisodeService;
@@ -11,6 +11,7 @@ use App\Validation\EpisodeRateValidation;
 
 class ApiController
 {
+
     #[Route('/api/episodes/import', name: 'episodes', methods: ['POST'])]
     public function episodes(EpisodeService $episodeService): Response
     {
@@ -23,9 +24,8 @@ class ApiController
     {
         $data = json_decode($request->getContent(), true);
         $validation->validateRate($data);
-
-        $episodeService->rate($data['id'], $data['text']);
-        return new JsonResponse(['method'=>'rate'], 200);
+        $rating = $episodeService->rate($data['id'], $data['text']);
+        return new JsonResponse(['rating'=>$rating], 200);
     }
 
     #[Route('/api/episode/review/{id}', name: 'rateByID', methods: ['POST'])]
@@ -35,8 +35,8 @@ class ApiController
         $data['id'] = intval($id);
 
         $validation->validateRate($data);
-        $rate = $episodeService->rate($data['id'], $data['text']);
-        return new JsonResponse(['rate'=>$rate], 200);
+        $rating = $episodeService->rate($data['id'], $data['text']);
+        return new JsonResponse(['rating'=>$rating], 200);
     }
 
     #[Route('/api/episode/summary/{id}', name: 'summary', methods: ['POST'])]
