@@ -31,6 +31,8 @@ The library `davmixcool/php-sentiment-analyzer` is used as sentiment analysis
 
 ### **This project is configured to be deployed via docker.**
 
+After install project will be available `http://localhost:84`
+
 ## Import episodes
 
 There are 2 ways to import episodes:
