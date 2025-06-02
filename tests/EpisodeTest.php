@@ -75,13 +75,14 @@ class EpisodeTest extends ApiTestCase
     public function testEpisodeSummary(){
 
         $episode = random_int(1, 51);
+        dump($episode);
         $this->client->request('POST', '/api/episode/summary/'.$episode);
         $answer = $this->getResponseData($this->client->getResponse());
         $this->assertResponseStatusCodeSame(200);
         $this->assertIsArray($answer);
         $this->assertArrayHasKey('name', $answer);
         $this->assertArrayHasKey('date', $answer);
-        $this->assertArrayHasKey('rate', $answer);
+        $this->assertArrayHasKey('rating', $answer);
         $this->assertArrayHasKey('last_reviews', $answer);
     }
 

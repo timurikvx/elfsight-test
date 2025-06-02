@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validation;
 
-class EpisodeRateValidation
+class EpisodeRatingValidation
 {
 
     public function __construct(private EntityManagerInterface $entityManager)
@@ -17,13 +17,13 @@ class EpisodeRateValidation
 
     }
 
-    public function validateRate($data): void
+    public function validateRating($data): void
     {
         $validator = Validation::createValidator();
         $constraints = new Collection([
             'text'=>[
-                new Constraints\NotBlank([], 'Text review is empty'),
-                new Constraints\Type('string', 'The review text must be a string')
+                new Constraints\NotBlank(message: 'Text review is empty'),
+                new Constraints\Type('string', message: 'The review text must be a string')
             ],
             'id'=>[
                 new Constraints\Type('integer'),
@@ -39,7 +39,7 @@ class EpisodeRateValidation
 
         $constraints = new Collection([
             'id'=>[
-                new Constraints\NotNull([], 'Episode with ID '.$id.' not found'),
+                new Constraints\NotNull(message: 'Episode with ID '.$id.' not found'),
             ]
         ]);
 
@@ -54,7 +54,7 @@ class EpisodeRateValidation
 
         $constraints = new Collection([
             'id'=>[
-                new Constraints\NotNull([], 'Episode with ID '.$id.' not found'),
+                new Constraints\NotNull(message: 'Episode with ID '.$id.' not found'),
             ]
         ]);
 

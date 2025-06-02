@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\AverageRateRepository;
+use App\Repository\AverageRatingRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AverageRateRepository::class)]
-class AverageRate
+#[ORM\Entity(repositoryClass: AverageRatingRepository::class)]
+class AverageRating
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

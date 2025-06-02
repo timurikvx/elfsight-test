@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Entity\AverageRate;
+use App\Entity\AverageRating;
 use App\Entity\Episode;
-use App\Entity\EpisodeRate;
+use App\Entity\EpisodeRating;
 use Doctrine\Common\Collections\ArrayCollection;
 use Sentiment\Analyzer;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -31,7 +31,7 @@ class EpisodeService
 
     private function listFromBase(): array
     {
-        $q = 'SELECT t.api_id as ID, t.name, t.air_date as date, t.episode, COALESCE(r.rate, 0) as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRate as r WITH t.id = r.episode ORDER BY ID';
+        $q = 'SELECT t.api_id as ID, t.name, t.air_date as date, t.episode, COALESCE(r.rate, 0) as avg_rate FROM \App\Entity\Episode t LEFT JOIN \App\Entity\AverageRating as r WITH t.id = r.episode ORDER BY ID';
         $query = $this->entityManager->createQuery($q);
         $result = $query->execute();
         $collection = new ArrayCollection($result);
@@ -46,7 +46,6 @@ class EpisodeService
         });
         return $collection->toArray();
     }
-
 
     public function import(): array
     {
@@ -103,25 +102,25 @@ class EpisodeService
 
     private function calculateAverage(Episode $episode): void
     {
-        $result = $this->entityManager->createQuery('SELECT AVG(t.sentinel_score) FROM App\Entity\EpisodeRate t WHERE t.episode = :episode')
+        $result = $this->entityManager->createQuery('SELECT AVG(t.sentinel_score) FROM App\Entity\EpisodeRating t WHERE t.episode = :episode')
             ->setParameter('episode', $episode->getId())->getSingleScalarResult();
         $average = round(floatval($result), 2);
 
         //Remove old value
-        $this->entityManager->createQuery('DELETE FROM App\Entity\AverageRate t WHERE t.episode = :episode')
+        $this->entityManager->createQuery('DELETE FROM App\Entity\AverageRating t WHERE t.episode = :episode')
             ->setParameter('episode', $episode->getId())->execute();
 
-        $rate = new AverageRate();
-        $rate->setEpisode($episode->getId());
-        $rate->setRate($average);
-        $this->entityManager->persist($rate);
+        $rating = new AverageRating();
+        $rating->setEpisode($episode->getId());
+        $rating->setRate($average);
+        $this->entityManager->persist($rating);
         $this->entityManager->flush();
 
         $this->cache->delete('average_rank_episode_'.$episode->getId());
         $this->cache->delete('last_reviews_episode_'.$episode->getId());
     }
 
-    public function rate($id, $text): float
+    public function rating($id, $text): float
     {
         $episode = $this->getEpisode($id);
 
@@ -129,31 +128,31 @@ class EpisodeService
         $result = $analyzer->getSentiment($text);
         $value = max(min($result['compound'], 1), 0);
 
-        $rate = new EpisodeRate();
-        $rate->setEpisode($episode->getId());
-        $rate->setText($text);
-        $rate->setSentinelScore($value);
-        $this->entityManager->persist($rate);
+        $rating = new EpisodeRating();
+        $rating->setEpisode($episode->getId());
+        $rating->setText($text);
+        $rating->setSentinelScore($value);
+        $this->entityManager->persist($rating);
         $this->entityManager->flush();
         $this->calculateAverage($episode);
         return $value;
     }
 
-    public function averageRate($id): float
+    public function averageRating($id): float
     {
         return $this->cache->get('average_rank_episode_'.$id, function () use ($id){
-            $averageRate = $this->entityManager->getRepository(AverageRate::class)->findOneBy(['episode'=> $id]);
-            if(is_null($averageRate)){
+            $averageRating = $this->entityManager->getRepository(AverageRating::class)->findOneBy(['episode'=> $id]);
+            if(is_null($averageRating)){
                 return 0;
             }
-            return $averageRate->getRate();
+            return $averageRating->getRate();
         });
     }
 
     public function lastRates($id): array
     {
         return $this->cache->get('last_reviews_episode_'.$id, function () use ($id){
-            $reviews = $this->entityManager->getRepository(EpisodeRate::class)->findBy(['episode'=> $id], ['id'=>'DESC'], 3);
+            $reviews = $this->entityManager->getRepository(EpisodeRating::class)->findBy(['episode'=> $id], ['id'=>'DESC'], 3);
             return (new ArrayCollection($reviews))->map(fn($item) => $item->getText())->toArray();
         });
     }
@@ -172,7 +171,7 @@ class EpisodeService
         return [
             'name'=>$episode->getName(),
             'date'=>$episode->getAirDate()->format('Y-m-d'),
-            'rate'=>$this->averageRate($episode->getId()),
+            'rating'=>$this->averageRating($episode->getId()),
             'last_reviews'=>$this->lastRates($episode->getId())
         ];
     }

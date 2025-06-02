@@ -2,13 +2,13 @@
 
 namespace App\Factory;
 
-use App\Entity\EpisodeRate;
+use App\Entity\EpisodeRating;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
- * @extends PersistentProxyObjectFactory<EpisodeRate>
+ * @extends PersistentProxyObjectFactory<EpisodeRating>
  */
-final class EpisodeRateFactory extends PersistentProxyObjectFactory
+final class EpisodeRatingFactory extends PersistentProxyObjectFactory
 {
     /**
      * @see https://symfony.com/bundles/ZenstruckFoundryBundle/current/index.html#factories-as-services
@@ -22,7 +22,7 @@ final class EpisodeRateFactory extends PersistentProxyObjectFactory
 
     public static function class(): string
     {
-        return EpisodeRate::class;
+        return EpisodeRating::class;
     }
 
     /**
@@ -45,7 +45,7 @@ final class EpisodeRateFactory extends PersistentProxyObjectFactory
     protected function initialize(): static
     {
         return $this
-            // ->afterInstantiate(function(EpisodeRate $episodeRate): void {})
+            // ->afterInstantiate(function(EpisodeRating $episodeRating): void {})
         ;
     }
 }

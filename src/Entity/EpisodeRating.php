@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\EpisodeRateRepository;
+use App\Repository\EpisodeRatingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: EpisodeRateRepository::class)]
-class EpisodeRate
+#[ORM\Entity(repositoryClass: EpisodeRatingRepository::class)]
+class EpisodeRating
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
