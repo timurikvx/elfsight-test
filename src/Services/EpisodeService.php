@@ -21,6 +21,7 @@ class EpisodeService
         $this->cache = $cache;
     }
 
+
     public function list(): array
     {
         return $this->cache->get('episodes_all', function (){
@@ -45,6 +46,7 @@ class EpisodeService
         });
         return $collection->toArray();
     }
+
 
     public function import(): array
     {
@@ -101,12 +103,11 @@ class EpisodeService
 
     private function calculateAverage(Episode $episode): void
     {
-        //Calculate also possible into query with AVG()
-        $rates = $this->entityManager->getRepository(EpisodeRate::class)->findBy(['episode'=> $episode->getId()]);
-        $list = new ArrayCollection($rates);
-        $sum = $list->reduce(fn($value, $item) => $value + $item->getSentinelScore(), 0);
-        $average = round($sum / count($rates), 2);
+        $result = $this->entityManager->createQuery('SELECT AVG(t.sentinel_score) FROM App\Entity\EpisodeRate t WHERE t.episode = :episode')
+            ->setParameter('episode', $episode->getId())->getSingleScalarResult();
+        $average = round(floatval($result), 2);
 
+        //Remove old value
         $this->entityManager->createQuery('DELETE FROM App\Entity\AverageRate t WHERE t.episode = :episode')
             ->setParameter('episode', $episode->getId())->execute();
 
