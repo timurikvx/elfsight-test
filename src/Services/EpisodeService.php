@@ -13,6 +13,7 @@ use App\Interfaces\EpisodeServiceInterface;
 class EpisodeService implements EpisodeServiceInterface
 {
 
+
     private CacheInterface $cache;
 
     public function __construct(private HttpClientInterface $client, private EntityManagerInterface $entityManager, CacheInterface $cache)
