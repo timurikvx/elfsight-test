@@ -5,9 +5,10 @@ namespace App\Entity;
 use App\Repository\EpisodeRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Interfaces\EpisodeInterface;
 
 #[ORM\Entity(repositoryClass: EpisodeRepository::class)]
-class Episode
+class Episode implements EpisodeInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

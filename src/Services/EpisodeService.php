@@ -2,16 +2,15 @@
 
 namespace App\Services;
 
-use App\Entity\AverageRating;
 use App\Entity\Episode;
-use App\Entity\EpisodeRating;
 use Doctrine\Common\Collections\ArrayCollection;
-use Sentiment\Analyzer;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use App\Interfaces\EpisodeInterface;
+use App\Interfaces\EpisodeServiceInterface;
 
-class EpisodeService
+class EpisodeService implements EpisodeServiceInterface
 {
 
     private CacheInterface $cache;
@@ -20,7 +19,6 @@ class EpisodeService
     {
         $this->cache = $cache;
     }
-
 
     public function list(): array
     {
@@ -100,80 +98,11 @@ class EpisodeService
         return $collection->map(fn ($item) => $item['ID'])->toArray();
     }
 
-    private function calculateAverage(Episode $episode): void
+    public function getEpisode(int $id, string $factory): EpisodeInterface
     {
-        $result = $this->entityManager->createQuery('SELECT AVG(t.sentinel_score) FROM App\Entity\EpisodeRating t WHERE t.episode = :episode')
-            ->setParameter('episode', $episode->getId())->getSingleScalarResult();
-        $average = round(floatval($result), 2);
-
-        //Remove old value
-        $this->entityManager->createQuery('DELETE FROM App\Entity\AverageRating t WHERE t.episode = :episode')
-            ->setParameter('episode', $episode->getId())->execute();
-
-        $rating = new AverageRating();
-        $rating->setEpisode($episode->getId());
-        $rating->setRate($average);
-        $this->entityManager->persist($rating);
-        $this->entityManager->flush();
-
-        $this->cache->delete('average_rank_episode_'.$episode->getId());
-        $this->cache->delete('last_reviews_episode_'.$episode->getId());
-    }
-
-    public function rating($id, $text): float
-    {
-        $episode = $this->getEpisode($id);
-
-        $analyzer = new Analyzer();
-        $result = $analyzer->getSentiment($text);
-        $value = max(min($result['compound'], 1), 0);
-
-        $rating = new EpisodeRating();
-        $rating->setEpisode($episode->getId());
-        $rating->setText($text);
-        $rating->setSentinelScore($value);
-        $this->entityManager->persist($rating);
-        $this->entityManager->flush();
-        $this->calculateAverage($episode);
-        return $value;
-    }
-
-    public function averageRating($id): float
-    {
-        return $this->cache->get('average_rank_episode_'.$id, function () use ($id){
-            $averageRating = $this->entityManager->getRepository(AverageRating::class)->findOneBy(['episode'=> $id]);
-            if(is_null($averageRating)){
-                return 0;
-            }
-            return $averageRating->getRate();
+        return $this->cache->get('episode_'.$id, function () use ($id, $factory){
+            return $this->entityManager->getRepository($factory)->findOneBy(['api_id'=> $id]);
         });
-    }
-
-    public function lastRates($id): array
-    {
-        return $this->cache->get('last_reviews_episode_'.$id, function () use ($id){
-            $reviews = $this->entityManager->getRepository(EpisodeRating::class)->findBy(['episode'=> $id], ['id'=>'DESC'], 3);
-            return (new ArrayCollection($reviews))->map(fn($item) => $item->getText())->toArray();
-        });
-    }
-
-    private function getEpisode($id)
-    {
-        return $this->cache->get('episode_'.$id, function () use ($id){
-            return $this->entityManager->getRepository(Episode::class)->findOneBy(['api_id'=> $id]);
-        });
-    }
-
-    public function getSummary($id): array
-    {
-        $episode = $this->getEpisode($id);
-
-        return [
-            'name'=>$episode->getName(),
-            'date'=>$episode->getAirDate()->format('Y-m-d'),
-            'rating'=>$this->averageRating($episode->getId()),
-            'last_reviews'=>$this->lastRates($episode->getId())
-        ];
     }
 
 }

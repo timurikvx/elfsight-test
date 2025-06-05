@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Validation;
 
-class EpisodeRatingValidation
+class EpisodeReviewValidation
 {
 
     public function __construct(private EntityManagerInterface $entityManager)
